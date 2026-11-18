@@ -1,0 +1,6 @@
+# Git Ignore
+mingit/
+mingit.zip
+firebase.exe
+.firebase/
+*.log
