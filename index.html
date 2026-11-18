@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>計算機概論專題：多元在線遊戲平台</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Global Top Bar -->
+  <header class="global-header">
+    <div class="logo-area">
+      <span class="logo-icon">🎮</span>
+      <span class="logo-title">多元多人在線遊戲平台 (Online Game Hub)</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button class="btn btn-sm btn-outline" id="cloud-status-btn" onclick="openFirebaseModal()">
+        ☁️ 雲端聯機設定
+      </button>
+      <button class="btn btn-sm btn-secondary" onclick="SoundFX.enabled = !SoundFX.enabled; this.textContent = SoundFX.enabled ? '🔊 音效開' : '🔇 音效關';">
+        🔊 音效開
+      </button>
+      <div class="user-profile-badge">
+        <span class="user-avatar">👤</span>
+        <input type="text" id="my-player-name-input" class="user-name-input" title="點擊修改在線暱稱" />
+      </div>
+    </div>
+  </header>
+
+  <!-- Firebase Cloud Config Modal -->
+  <div id="firebase-modal" class="modal-overlay" style="display:none;">
+    <div class="card modal-content-box">
+      <div class="card-header highlight">
+        <span class="icon">☁️</span>
+        <h3>Firebase 雲端真實多人即時聯機設定</h3>
+      </div>
+      <p style="font-size:13px; color:#cbd5e1; line-height:1.6; margin-bottom:12px;">
+        已部署至 Firebase Hosting！若想支援「跨電腦、跨手機、全世界玩家即時同樂」，請至 
+        <a href="https://console.firebase.google.com/" target="_blank" style="color:var(--primary);">Firebase 控制台</a> 建立 Realtime Database，並將設定貼於下方（預設已啟用 BroadcastChannel 跨分頁本機聯機）：
+      </p>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Database URL (資料庫網址)：</label>
+        <input type="text" id="fb-input-dburl" class="freq-input" placeholder="https://your-project-default-rtdb.firebaseio.com" />
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">API Key：</label>
+        <input type="text" id="fb-input-apikey" class="freq-input" placeholder="AIzaSy..." />
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Project ID：</label>
+        <input type="text" id="fb-input-projid" class="freq-input" placeholder="my-game-hub" />
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn btn-outline" onclick="closeFirebaseModal()">關閉</button>
+        <button class="btn btn-primary" onclick="saveFirebaseModal()">儲存並連線</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="app-container">
+
+    <!-- ==========================================
+         VIEW 1: MAIN LOBBY (3 DUNGEONS)
+         ========================================== -->
+    <section id="view-lobby" class="view-section">
+      <div class="lobby-banner">
+        <h1>計算機概論專題・多元副本在線聯機</h1>
+        <p>共有三個副本可供選擇。副本一為個人單機遊戲，副本二與三為獨立多人聯機遊戲，支援即時跨分頁對戰！</p>
+      </div>
+
+      <div class="dungeons-grid">
+        <!-- Dungeon 1 -->
+        <div class="dungeon-card" id="card-dungeon-1">
+          <div>
+            <div class="dungeon-card-top">
+              <div class="dungeon-icon-box">🐢</div>
+              <span class="badge badge-solo">限1人・個人單機</span>
+            </div>
+            <h2 class="dungeon-title">副本一：海龜湯</h2>
+            <p class="dungeon-desc">
+              先介紹遊戲規則，待玩家確認後進入遊戲。電腦擔任出題者與回答者，僅以「是（對）」、「不是（不對）」或「沒有關係（無關）」作答。每推理完一小節便解鎖下一段劇情片段直至完整還原故事線。旁設求助鍵，提供 3 次提示機會。
+            </p>
+          </div>
+          <div>
+            <div class="dungeon-status-box">
+              <div class="dungeon-status-label">副本狀態</div>
+              <div class="dungeon-status-text">副本一（單機模式・先讀規則後確認開局）</div>
+            </div>
+            <div class="dungeon-card-actions">
+              <button class="btn btn-primary" onclick="App.startDungeon1()">進入海龜湯推理</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dungeon 2 -->
+        <div class="dungeon-card" id="card-dungeon-2">
+          <div>
+            <div class="dungeon-card-top">
+              <div class="dungeon-icon-box">🐺</div>
+              <span class="badge badge-multi">限8人、9人、10人、12人</span>
+            </div>
+            <h2 class="dungeon-title">副本二：狼人殺</h2>
+            <p class="dungeon-desc">
+              遊戲開始前先以動畫介紹遊戲規則，待所有人都按下確認鍵後進入遊戲。主持人由電腦擔任，隨機給予身份。白天階段發言依主持人指示順序依次在右側對話欄打字輸入。神職首日極限規則、女巫同守同救、白癡翻牌免疫及狼王/獵人技能完整呈現。
+            </p>
+          </div>
+          <div>
+            <div class="dungeon-status-box">
+              <div class="dungeon-status-label">副本狀態</div>
+              <div class="dungeon-status-text" id="dungeon-2-status-text">副本二（尚未開啟）</div>
+            </div>
+            <div class="dungeon-card-actions">
+              <button class="btn btn-primary" id="dungeon-2-action-btn" onclick="App.openNewRoom(2)">開啟新副本組隊</button>
+              <button class="btn btn-outline" id="dungeon-2-new-btn" style="display:none;" onclick="App.openNewRoom(2)">＋ 開啟另一個獨立副本</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dungeon 3 -->
+        <div class="dungeon-card" id="card-dungeon-3">
+          <div>
+            <div class="dungeon-card-top">
+              <div class="dungeon-icon-box">⚔️</div>
+              <span class="badge badge-pvp">限14人、12人、10人</span>
+            </div>
+            <h2 class="dungeon-title">副本三：陣營對抗戰</h2>
+            <p class="dungeon-desc">
+              隨機分成兩組對抗。自由選擇【指揮】(限1人/核心部署)、【輔助】(30%以下/治療利用資源)、【打手】(武力護衛)，右側隊伍聊天欄供職業分配溝通。各職業含 3 名具備不同特質數值與技能的專屬英雄，確認後按 Enter 鎖定（限時5分鐘）。隨機抽取【拔旗戰/生存戰/據點戰】並以動畫公佈規則，全員確認後開戰！
+            </p>
+          </div>
+          <div>
+            <div class="dungeon-status-box">
+              <div class="dungeon-status-label">副本狀態</div>
+              <div class="dungeon-status-text" id="dungeon-3-status-text">副本三（尚未開啟）</div>
+            </div>
+            <div class="dungeon-card-actions">
+              <button class="btn btn-primary" id="dungeon-3-action-btn" onclick="App.openNewRoom(3)">開啟新副本組隊</button>
+              <button class="btn btn-outline" id="dungeon-3-new-btn" style="display:none;" onclick="App.openNewRoom(3)">＋ 開啟另一個獨立副本</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         VIEW 2: ROOM ASSEMBLY / WAITING LOBBY
+         ========================================== -->
+    <section id="view-room" class="view-section" style="display:none;">
+      <div class="card room-header-card">
+        <div>
+          <h2 id="room-title">組隊大廳</h2>
+          <div class="room-capacity-desc" id="room-capacity-desc"></div>
+        </div>
+        <div>
+          <button class="btn btn-outline" onclick="App.leaveCurrentRoom()">退出組隊</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="icon">👥</span>
+          <h3>當前已加入隊伍的玩家列表</h3>
+        </div>
+        <div class="room-player-grid" id="room-player-grid"></div>
+
+        <!-- Host Start Game Button Container -->
+        <div class="room-start-btn-container" id="room-start-btn-container"></div>
+
+        <!-- Bot helper panel for effortless solo testing of multiplayer games -->
+        <div id="room-bot-controls"></div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         VIEW 3: DUNGEON 1 (海龜湯)
+         ========================================== -->
+    <section id="view-dungeon1" class="view-section" style="display:none;">
+      <div id="dungeon1-container"></div>
+    </section>
+
+    <!-- ==========================================
+         VIEW 4: DUNGEON 2 (狼人殺)
+         ========================================== -->
+    <section id="view-dungeon2" class="view-section" style="display:none;">
+      <div id="dungeon2-container"></div>
+    </section>
+
+    <!-- ==========================================
+         VIEW 5: DUNGEON 3 (陣營對抗戰)
+         ========================================== -->
+    <section id="view-dungeon3" class="view-section" style="display:none;">
+      <div id="dungeon3-container"></div>
+    </section>
+
+  </main>
+
+  <!-- Firebase SDK Compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebaseConfig.js"></script>
+
+  <!-- Game Modules -->
+  <script src="js/audio.js"></script>
+  <script src="js/network.js"></script>
+  <script src="js/roomManager.js"></script>
+  <script src="js/dungeon1.js"></script>
+  <script src="js/dungeon2.js"></script>
+  <script src="js/dungeon3.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    function openFirebaseModal() {
+      document.getElementById('firebase-modal').style.display = 'flex';
+      if (window.firebaseConfig) {
+        document.getElementById('fb-input-dburl').value = window.firebaseConfig.databaseURL || '';
+        document.getElementById('fb-input-apikey').value = window.firebaseConfig.apiKey || '';
+        document.getElementById('fb-input-projid').value = window.firebaseConfig.projectId || '';
+      }
+    }
+    function closeFirebaseModal() {
+      document.getElementById('firebase-modal').style.display = 'none';
+    }
+    function saveFirebaseModal() {
+      const dbUrl = document.getElementById('fb-input-dburl').value.trim();
+      const apiKey = document.getElementById('fb-input-apikey').value.trim();
+      const projId = document.getElementById('fb-input-projid').value.trim();
+
+      const cfg = {
+        databaseURL: dbUrl,
+        apiKey: apiKey,
+        projectId: projId
+      };
+      localStorage.setItem('mp_firebase_config', JSON.stringify(cfg));
+      window.firebaseConfig = cfg;
+      alert("Firebase 設定已儲存！重新整理頁面即可套用雲端即時連線。");
+      location.reload();
+    }
+  </script>
+</body>
+</html>
